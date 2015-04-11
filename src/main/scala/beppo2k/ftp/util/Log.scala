@@ -19,7 +19,7 @@ case class Error(level:Int = 3 , levelStr:String = "ERROR") extends LogLevel
 
 object Log {
 
-    var logLevel:LogLevel = Info()
+    var logLevel:LogLevel = Warn()
 
     val dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 

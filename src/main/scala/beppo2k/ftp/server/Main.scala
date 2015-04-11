@@ -17,7 +17,7 @@ object DataTransferActor {
 }
 object Main extends App {
 
-    val port =  super.args != null match {
+    val port =  (super.args != null && super.args.length == 1) match {
         case true => args(0).toInt
         case false => 21
     }

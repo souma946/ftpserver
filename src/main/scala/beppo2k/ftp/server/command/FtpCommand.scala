@@ -17,7 +17,12 @@ class User(argument: String) extends FtpCommand(argument: String) {
 
     override def execute(selector: Selector, key: SelectionKey) {
         Log.info("User start")
+
         val channel = key.channel().asInstanceOf[SocketChannel];
+
+        val addr = channel.socket().getRemoteSocketAddress().toString()
+        val session = FtpUserSession.get(addr, selector, key)
+        session.username = this.argument
         val res = new FtpCommandResponse(
                 FtpReturnCode.USER_NAME_OKAY,
                 "Please specify the password")
@@ -31,15 +36,23 @@ class Pass(argument: String) extends FtpCommand(argument: String) {
     override def execute(selector: Selector, key: SelectionKey) {
         Log.info("Pass start")
         val channel = key.channel().asInstanceOf[SocketChannel]
+        val addr = channel.socket().getRemoteSocketAddress().toString()
+        val session = FtpUserSession.get(addr, selector, key)
+        session.password = this.argument
 
-        val res = new FtpCommandResponse(
+        val bb = session.login() match {
+            case true => {
+                new FtpCommandResponse(
                 FtpReturnCode.USER_LOGGED_IN,
-                "Login successful")
-        val bb = res.toBytes()
+                "Login successful").toBytes()
+            }
+            case false => {
+                new FtpCommandResponse(
+                FtpReturnCode.NOT_LOGGED_IN,
+                "Login incorrect").toBytes()
+            }
+        }
 
-        val addr = channel.socket().getRemoteSocketAddress().toString();
-
-        FtpUserSession.get(addr , selector , key)
         channel.write(bb)
         Log.info("Pass end")
     }

@@ -31,7 +31,6 @@ class FtpDataTransfer extends Thread {
         } finally {
             writeLock.unlock()
         }
-
     }
 
     override def run(): Unit = {
@@ -103,7 +102,7 @@ class FtpDataTransfer extends Thread {
                                         }
                                     } else {
                                         // not ready
-                                        Log.warn("command after pasv isn't receive")
+                                        Log.info("command after pasv isn't receive")
                                     }
                                 }
                                 case None => {
