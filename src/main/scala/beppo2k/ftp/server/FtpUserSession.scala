@@ -9,7 +9,6 @@ import beppo2k.ftp.auth.{UnixFtpAuth, FtpAuth, WinFtpAuth}
 import beppo2k.ftp.server.datatransfer.handler.PassiveCommandHandler
 import beppo2k.ftp.util.Log
 import com.sun.jna.{Platform, Native, Library}
-import sun.plugin2.ipc.unix.UnixIPCFactory
 
 import scala.collection.mutable.HashMap
 
