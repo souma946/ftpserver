@@ -359,7 +359,8 @@ class List(argument: String) extends FtpCommand(argument: String) {
         val addr = channel.socket().getRemoteSocketAddress().toString()
 
         val session = FtpUserSession.get(addr , selector , key)
-        val handler = new NlstHandler(session.currentDir)
+        val isDetail = (argument != null && !argument.equals(""))
+        val handler = new NlstHandler(session.currentDir , isDetail)
         session.handler = handler
         handler.comanndSelector = selector
         handler.commandConnectionKey = key

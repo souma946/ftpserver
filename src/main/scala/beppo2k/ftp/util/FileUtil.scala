@@ -1,8 +1,11 @@
 package beppo2k.ftp.util
 
 import java.io.File
-import java.nio.file.attribute.PosixFilePermissions
-import java.nio.file.Files
+import java.nio.file.attribute._
+import java.nio.file.{Path, Files}
+import java.text.SimpleDateFormat
+
+import com.sun.jna.{Platform}
 
 object FileUtil {
 
@@ -58,15 +61,17 @@ object FileUtil {
         }
     }
 
-    def list(file:File) :String = {
+    def list(file:File , isDetail:Boolean = false) :String = {
         val sb = new StringBuilder()
         file match {
             case d if d.isDirectory() => {
                 for(f <- d.listFiles()){
+                    if(isDetail) sb.append(detail(f))
                     sb.append(f.getName).append("\r\n")
                 }
             }
             case f if f.isFile() => {
+                if(isDetail) sb.append(detail(f))
                 sb.append(f.getName).append("\r\n")
             }
             case _ => {
@@ -74,5 +79,23 @@ object FileUtil {
             }
         }
         return sb.toString()
+    }
+
+    val dfmt = new SimpleDateFormat("yyyy/MM/dd  hh:mm")
+    def detail(file:File) :String =  {
+        Platform.isLinux match {
+            case true => {
+                val attr = Files.getFileAttributeView(file.toPath , classOf[PosixFileAttributeView]).readAttributes()
+                return "%s %s ".format(attr.owner().getName() , PosixFilePermissions.toString(attr.permissions()))
+            }
+            case _ => {
+                val attr = Files.getFileAttributeView(file.toPath , classOf[DosFileAttributeView]).readAttributes()
+                val strDir = file.isDirectory() match {
+                    case true => "<DIR>"
+                    case _ => "     "
+                }
+                return "%s %s ".format(dfmt.format(new java.util.Date(file.lastModified())) , strDir)
+            }
+        }
     }
 }

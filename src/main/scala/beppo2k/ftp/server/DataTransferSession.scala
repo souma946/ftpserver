@@ -1,22 +1,20 @@
 package beppo2k.ftp.server
 
-import beppo2k.ftp.server.datatransfer.FtpDataTransfer
-import beppo2k.ftp.server.datatransfer.handler.PassiveCommandHandler
+import beppo2k.ftp.server.datatransfer.{FtpDataTransfer}
 import beppo2k.ftp.util.Log
 
 import scala.collection.mutable
-import scala.collection.mutable.Map
-import java.nio.channels.SelectableChannel
 import java.nio.channels.SocketChannel
 import java.nio.channels.Selector
 import java.nio.channels.SelectionKey
-import javax.sound.sampled.SourceDataLine
+import scala.collection.mutable.Map
+import java.nio.channels.SelectableChannel
 
 class DataTransferSession(commandSession:FtpUserSession , active:Option[(String , Int)]) {
 
     val (sourceChannel , addr , port) = active match {
         case Some((ip,port)) => {
-            val socket = FtpDataTransfer.createClientSocket(ip , port)
+            val socket:SocketChannel = FtpDataTransfer.createClientSocket(ip , port)
             (socket,
             socket.getRemoteAddress().toString(),
             port)

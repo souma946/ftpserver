@@ -6,7 +6,7 @@ import java.nio.channels.SocketChannel
 import java.nio.ByteBuffer
 import beppo2k.ftp.util.{FileUtil, Log}
 
-class NlstHandler(filePath:String) extends PassiveCommandHandler {
+class NlstHandler(filePath:String , isDetail:Boolean) extends PassiveCommandHandler {
 
     override def handle(key:SelectionKey) :Unit = {
         Log.info("NlstHandler start")
@@ -17,7 +17,7 @@ class NlstHandler(filePath:String) extends PassiveCommandHandler {
             return
         }
 
-        val list = FileUtil.list(file)
+        val list = FileUtil.list(file , isDetail)
         val bb = ByteBuffer.wrap(list.getBytes())
         channel.write(bb)
         super.finishCommand("Directory send OK")
