@@ -81,20 +81,27 @@ object FileUtil {
         return sb.toString()
     }
 
-    val dfmt = new SimpleDateFormat("yyyy/MM/dd  hh:mm")
+
     def detail(file:File) :String =  {
         Platform.isLinux match {
             case true => {
                 val attr = Files.getFileAttributeView(file.toPath , classOf[PosixFileAttributeView]).readAttributes()
-                return "%s %s ".format(attr.owner().getName() , PosixFilePermissions.toString(attr.permissions()))
+                val isDir = file.isDirectory() match { case true => "d" case false => "-" }
+                val dfmt = new SimpleDateFormat("MMM dd yyyy hh:mm")
+                return "%s%s %10s %10s %10d %s ".format(
+                    isDir,
+                    PosixFilePermissions.toString(attr.permissions()) ,
+                    attr.owner().getName() ,
+                    attr.group().getName() ,
+                    attr.size() ,
+                    dfmt.format(new java.util.Date(file.lastModified())))
             }
             case _ => {
-                val attr = Files.getFileAttributeView(file.toPath , classOf[DosFileAttributeView]).readAttributes()
-                val strDir = file.isDirectory() match {
-                    case true => "<DIR>"
-                    case _ => "     "
-                }
-                return "%s %s ".format(dfmt.format(new java.util.Date(file.lastModified())) , strDir)
+                val dfmt = new SimpleDateFormat("MMM dd yyyy hh:mm")
+                val strDir = file.isDirectory() match {case true => "<DIR>" case _ => "     " }
+                return "%s %s ".format(
+                    dfmt.format(new java.util.Date(file.lastModified())) ,
+                    strDir)
             }
         }
     }
