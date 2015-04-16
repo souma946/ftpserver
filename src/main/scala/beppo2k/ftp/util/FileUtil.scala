@@ -105,4 +105,58 @@ object FileUtil {
             }
         }
     }
+
+    private def getHomeCurrentPath(homeDir:String , currentDir:String) :Option[(Path , Path)] = {
+        val homeFile = new File(homeDir)
+        if(!homeFile.exists) return None
+        val homePath = homeFile.toPath.toAbsolutePath
+
+        val currentFile = new File(currentDir)
+        if(!currentFile.exists) return None
+        val currentPath = currentFile.toPath.toAbsolutePath
+
+        return Some((homePath , currentPath))
+    }
+
+    def normalizePath(homeDir:String , currentDir:String) :Option[String] = {
+        val (homePath , currentPath) = getHomeCurrentPath(homeDir , currentDir) match {
+            case None => return None
+            case Some(t) => t
+        }
+
+        return Platform.isWindows match {
+            case true => {
+                val h = homePath.toString.replaceAll("\\\\","/")
+                currentPath.toString.replaceAll("\\\\","/").replaceAll(h,"") match {
+                    case "" => Some("/")
+                    case cc => Some(cc)
+                }
+            }
+            case false => {
+                val c = currentPath.toString.replaceAll(homePath.toString , "/")
+                Some(c)
+            }
+        }
+    }
+
+    def changeCurrentDir(homeDir:String , currentDir:String , targetDir:String) :Option[String] = {
+        val (homePath , currentPath) = getHomeCurrentPath(homeDir , currentDir) match {
+            case None => return None
+            case Some(t) =>  t
+        }
+
+        val movedCurrentDir = new File(currentPath.toString + File.separator + targetDir)
+        if(!movedCurrentDir.exists()) return None
+
+        val movedCurrentPath = movedCurrentDir.toPath().toRealPath()
+
+        if(!movedCurrentPath.startsWith(homePath)){
+            return None
+        }
+
+        return normalizePath(homeDir , movedCurrentPath.toString) match {
+            case None => None
+            case Some(_) => Some(movedCurrentPath.toString)
+        }
+    }
 }

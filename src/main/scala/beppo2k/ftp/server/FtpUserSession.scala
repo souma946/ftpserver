@@ -7,7 +7,7 @@ import java.nio.file.Path
 
 import beppo2k.ftp.auth.{UnixFtpAuth, FtpAuth, WinFtpAuth}
 import beppo2k.ftp.server.datatransfer.handler.PassiveCommandHandler
-import beppo2k.ftp.util.Log
+import beppo2k.ftp.util.{FileUtil, Log}
 import com.sun.jna.{Platform, Native, Library}
 
 import scala.collection.mutable.HashMap
@@ -15,6 +15,8 @@ import scala.collection.mutable.HashMap
 class FtpUserSession(var selector:Selector , var key:SelectionKey) {
 
     var currentDir:String = _
+
+    var homeDir:String = _
 
     var handler:PassiveCommandHandler = _
 
@@ -24,27 +26,33 @@ class FtpUserSession(var selector:Selector , var key:SelectionKey) {
 
     var isLogin:Boolean = _
 
-    var auth:FtpAuth = _
-
     @volatile
     var canTransfer:Boolean = _
 
     def login() :Boolean = {
 
         val auth = Platform.isWindows match {
-            case true => {new WinFtpAuth()}
-            case false => {new UnixFtpAuth()}
+            case true  => new WinFtpAuth()
+            case false => new UnixFtpAuth()
         }
+
         this.isLogin = auth.login(username,password)
-        this.auth = auth
         if(isLogin){
-            this.currentDir = auth.getHomeDir(username)
+            this.homeDir = auth.getHomeDir(username)
+            this.currentDir = this.homeDir
         }
         return this.isLogin
     }
 
-    def changeCurrentDir(dir:String) :Boolean = {
+    def getCurrentDir() :String = {
+        return FileUtil.normalizePath(this.homeDir , this.currentDir) match {
+            case Some(path) => return path
+            case None => return ""
+        }
 
+    }
+    def changeCurrentDir(dir:String) :Boolean = {
+/*
         val path:Path = new File(this.currentDir + File.separator + dir).toPath()
 
         val ret = path match {
@@ -57,6 +65,14 @@ class FtpUserSession(var selector:Selector , var key:SelectionKey) {
             }
         }
         return ret
+*/
+        FileUtil.changeCurrentDir(this.homeDir , this.currentDir , dir) match {
+            case None => return false
+            case Some(newCurrentPath) => {
+                this.currentDir = newCurrentPath
+                return true
+            }
+        }
     }
 }
 

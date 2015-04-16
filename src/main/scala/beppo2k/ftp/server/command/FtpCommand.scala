@@ -343,9 +343,10 @@ class Pwd(argument: String) extends FtpCommand(argument: String) {
 
         val session = FtpUserSession.get(addr , selector , key)
 
+        val path = session.getCurrentDir()
         val res = new FtpCommandResponse(
                 FtpReturnCode.PATHNAME_CREATED ,
-                session.currentDir)
+                path)
         val bb = res.toBytes()
         channel.write(bb)
         Log.info("Pwd end")
