@@ -83,8 +83,15 @@ object FileUtil {
 
 
     def detail(file:File) :String =  {
-        Platform.isLinux match {
+        Platform.isWindows() match {
             case true => {
+                val dfmt = new SimpleDateFormat("MMM dd yyyy hh:mm")
+                val strDir = file.isDirectory() match {case true => "<DIR>" case _ => "     " }
+                return "%s %s ".format(
+                    dfmt.format(new java.util.Date(file.lastModified())) ,
+                    strDir)
+            }
+            case false => {
                 val attr = Files.getFileAttributeView(file.toPath , classOf[PosixFileAttributeView]).readAttributes()
                 val isDir = file.isDirectory() match { case true => "d" case false => "-" }
                 val dfmt = new SimpleDateFormat("MMM dd yyyy hh:mm")
@@ -96,13 +103,7 @@ object FileUtil {
                     attr.size() ,
                     dfmt.format(new java.util.Date(file.lastModified())))
             }
-            case _ => {
-                val dfmt = new SimpleDateFormat("MMM dd yyyy hh:mm")
-                val strDir = file.isDirectory() match {case true => "<DIR>" case _ => "     " }
-                return "%s %s ".format(
-                    dfmt.format(new java.util.Date(file.lastModified())) ,
-                    strDir)
-            }
+
         }
     }
 
